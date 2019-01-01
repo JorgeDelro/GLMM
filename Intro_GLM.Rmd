@@ -1,0 +1,102 @@
+---
+title: "Introduction to GLM"
+output: html_document
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+This tutorial to generalized linear mixed modeling is based in the fantastic book entitled  **A beginner´s guide to GLM and GLMM with R - a frequentist and Bayesian perspective for the ecologist** by Alain F. Zuur, Joseph M. Hilbe and Elena N. Leno and published by Highland Statistics Ltd in 2013. Our aim is to re-analysed the data using the `tidyverse` package to manipulate and plot the data and the packages `glmmTMB` and `RStan` for frequentist and Bayesian analyses respectively. Databases can be downloaded from http://highstat.com/index.php/beginner-s-guide-to-glm-and-glmm. I should stress that I am not an ecologist, I am just and sport & exercise scientist with a passion for the R universe and the statistical modeling. 
+
+
+In the first chapter they investigate the relationship between total fish abundance and mean depth for different time periods (fist time period, 1979 - 1989; second time period, 1997 - 2002). We plot the data before applying any model.
+
+
+```{r, echo=TRUE, message=FALSE, fig.align='center'}
+library(readxl)
+library(tidyverse)
+
+# Note that I have stored all databases in a folder called "Databases"
+# Read database
+Fish_db <- read_xls(path = "Databases/Baileyetal2008.xls")
+
+# Figure 1.1
+Fish_db %>%
+  ggplot(aes(x = MeanDepth, y = TotAbund, color = factor(Period))) +
+  geom_point() +
+  ylab("Number of fishes (n)") +
+  xlab("Mean depth (km)") +
+  theme(legend.position = "none") +
+  facet_wrap(~ Period, labeller = labeller(Period = c("1" = "1979 - 1989", "2" = "1997 - 2002")))
+```
+
+## Poisson GLM
+
+Any GLM is specified in three steps:
+
+1. A distribution for the response variable
+2. A predictor function specyfying the covariates
+3. The link function between the predictor function and the mean of the distribution
+
+#### 1. Distribution function
+For count data two commonly distributions are the Poisson and the negative binomial. The Poisson distribution function is given by:
+
+$$
+\normalsize 
+\begin{aligned}
+f(Y|\mu) = Pr(Y = y|\mu) = \frac{\mu^y · e^{-\mu}}{y!}
+\end{aligned}
+$$
+
+Where the notation $f(Y|\mu)$ represents the Poisson distribution of a variable $Y$ for given mean $\mu$.
+
+#### 2. Predictor function
+Merely specifies the covariates that wil be used in the model. In our case:
+
+$$
+\normalsize
+\begin{aligned}
+\eta_i = \beta_1 + \beta_2 · MeanDepth_i
+\end{aligned}
+$$
+Where $\beta_1$ and $\beta_2$ are the parameters of the model.
+
+#### 3. Link the mean of the distribution and the predictor function
+
+In this example Total abundance (i.e. the outcome variable) is assumed that is Poisson distributed with mean $\mu_i$, Hence:
+
+$$
+\normalsize
+\begin{aligned}
+TotAbund_i \sim P(\mu_i)
+\end{aligned}
+$$
+
+$$
+\normalsize
+\begin{aligned}
+E(TotAbund_i) = var(TotAbund_i) = \mu_i
+\end{aligned}
+$$
+$$
+\normalsize
+\begin{aligned}
+\eta_i = \beta_1 + \beta_2 · MeanDepth_i
+\end{aligned}
+$$
+The canonical link function for the Poisson distribution is the **log** link function, which is defined by:
+
+$$
+\normalsize
+\begin{aligned}
+log(\mu_i) = \eta_i \Leftarrow\Rightarrow \mu_i = e^{\eta_i}=e^{\beta_1 + \beta_2 · MeanDepth_i}
+\end{aligned}
+$$
+The log link implies that the fitted values are always positive regardless the values of the covariates and the estimated regression parameters.
+
+#### Estimation of the parameters using a "frequentist" approach
+
+
+
